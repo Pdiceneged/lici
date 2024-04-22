@@ -5,7 +5,7 @@ import base64
 
 st.set_page_config(
     page_title="Licitalert",
-    page_icon="🏛️"
+    page_icon="🤝"
 )
 @st.cache_data()
 def get_img_as_base64(file):
