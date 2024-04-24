@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import json
 import base64
+import datetime
 
 st.set_page_config(
     page_title="Licitalert",
@@ -37,43 +38,39 @@ page_bg_img = f"""
 
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
-def coletar_licitacoes(url, palavras_chave, pagina, token):
+def coletar_licitacoes(url, palavras_chave, pagina, token, data_maxima):
     palavras_chave_str = ",".join(palavras_chave)
-
     params = {
         'uf': '',
         'palavra_chave': palavras_chave_str,
         'pagina': pagina,
         'token': token
     }
-
     response = requests.get(url, params=params)
-
     if response.status_code == 200:
         try:
             data = response.json()
         except json.JSONDecodeError:
             st.error("Erro ao decodificar a resposta JSON.")
-            return ""
+            return None
 
         licitacoes_info = ""
-
         for licitacao in data.get('licitacoes', []):
-            licitacoes_info += f"Título: {licitacao['titulo']}\n\n"
-            licitacoes_info += f"Identificador desta licitação: {licitacao['id_licitacao']}\n\n"
-            licitacoes_info += f"Modalidade: {licitacao['tipo']}\n\n"
-            licitacoes_info += f"Órgão Responsável: {licitacao['orgao']}\n\n"
-            licitacoes_info += f"Data de Abertura: {licitacao['abertura']}\n\n"
-            licitacoes_info += f"Valor: {licitacao['valor']}\n\n"
-            licitacoes_info += f"Objeto: {licitacao['objeto']}\n\n"
-            licitacoes_info += f"Link: {licitacao['link']}\n\n"
-            licitacoes_info += "---\n\n"
-
+            data_abertura = datetime.datetime.strptime(licitacao['abertura'], "%Y-%m-%d")
+            if data_abertura <= data_maxima:
+                licitacoes_info += f"Título: {licitacao['titulo']}\n\n"
+                licitacoes_info += f"Identificador desta licitação: {licitacao['id_licitacao']}\n\n"
+                licitacoes_info += f"Modalidade: {licitacao['tipo']}\n\n"
+                licitacoes_info += f"Órgão Responsável: {licitacao['orgao']}\n\n"
+                licitacoes_info += f"Data de Abertura: {licitacao['abertura']}\n\n"
+                licitacoes_info += f"Valor: {licitacao['valor']}\n\n"
+                licitacoes_info += f"Objeto: {licitacao['objeto']}\n\n"
+                licitacoes_info += f"Link: {licitacao['link']}\n\n"
+                licitacoes_info += "---\n\n"
         return licitacoes_info
     else:
         st.error(f"Erro na solicitação: {response.status_code}")
-        st.error(response.text)
-        return ""
+        return None
     st.markdown("---")
 
 def imprimir_licitacoes(licitacoes_info):
@@ -88,40 +85,32 @@ def imprimir_licitacoes(licitacoes_info):
     else:
         st.write("Nenhuma solicitação encontrada.")
 
-
 def main():
     st.image("kkk.png", width=270, use_column_width=False)
-
     st.title("Olá Contratos")
-    st.markdown("**Lembre-se de conferir se já foi requisitada a solicitação no dia de hoje, busque apenas 1 vez no dia!**")
-
     token = st.text_input("Coloque o Token:", type='password')
     url_api = st.secrets["licitacao"]["url"]
+    data_maxima_input = st.date_input("Data máxima para as licitações:", datetime.datetime.today())
+    data_maxima = datetime.datetime.combine(data_maxima_input, datetime.datetime.min.time())
 
     buscar_button = st.button("Buscar Licitações")
-    max_licitacoes = 97
-    palavras_chave = ["elétrica", "fotovoltaica", "subestação", "corte", "religa", "sigfi", "migdi"]
-
     if buscar_button:
         st.info("Buscando licitações...")
-
         licitacoes_info = ""
         pagina_atual = 1
-        while len(licitacoes_info.split('\n\n')) < max_licitacoes:
-            licitacoes_info_pagina = coletar_licitacoes(url_api, palavras_chave, pagina_atual, token)
+        while len(licitacoes_info.split('\n\n')) < 97 and pagina_atual <= 2:  # Limita a busca às primeiras duas páginas
+            licitacoes_info_pagina = coletar_licitacoes(url_api, palavras_chave, pagina_atual, token, data_maxima)
             if not licitacoes_info_pagina:
                 break
-
             licitacoes_info += licitacoes_info_pagina
             pagina_atual += 1
-
         imprimir_licitacoes(licitacoes_info)
-
         st.success("Licitações processadas com sucesso!")
         st.write("Número de licitações coletadas: {}".format(len(licitacoes_info.split('\n\n')) - 1))
 
 if __name__ == "__main__":
     main()
+
 
 st.markdown("---")
 st.markdown("Desenvolvido por [PedroFS](https://linktr.ee/Pedrofsf)")
