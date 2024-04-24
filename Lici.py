@@ -38,6 +38,8 @@ page_bg_img = f"""
 
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
+import datetime
+
 def coletar_licitacoes(url, palavras_chave, pagina, token, data_maxima):
     palavras_chave_str = ",".join(palavras_chave)
     params = {
@@ -56,21 +58,26 @@ def coletar_licitacoes(url, palavras_chave, pagina, token, data_maxima):
 
         licitacoes_info = ""
         for licitacao in data.get('licitacoes', []):
-            data_abertura = datetime.datetime.strptime(licitacao['abertura'], "%Y-%m-%d")
-            if data_abertura <= data_maxima:
-                licitacoes_info += f"Título: {licitacao['titulo']}\n\n"
-                licitacoes_info += f"Identificador desta licitação: {licitacao['id_licitacao']}\n\n"
-                licitacoes_info += f"Modalidade: {licitacao['tipo']}\n\n"
-                licitacoes_info += f"Órgão Responsável: {licitacao['orgao']}\n\n"
-                licitacoes_info += f"Data de Abertura: {licitacao['abertura']}\n\n"
-                licitacoes_info += f"Valor: {licitacao['valor']}\n\n"
-                licitacoes_info += f"Objeto: {licitacao['objeto']}\n\n"
-                licitacoes_info += f"Link: {licitacao['link']}\n\n"
-                licitacoes_info += "---\n\n"
+            try:
+                data_abertura = datetime.datetime.strptime(licitacao['abertura'], "%Y-%m-%d")
+                if data_abertura <= data_maxima:
+                    licitacoes_info += f"Título: {licitacao['titulo']}\n\n"
+                    licitacoes_info += f"Identificador desta licitação: {licitacao['id_licitacao']}\n\n"
+                    licitacoes_info += f"Modalidade: {licitacao['tipo']}\n\n"
+                    licitacoes_info += f"Órgão Responsável: {licitacao['orgao']}\n\n"
+                    licitacoes_info += f"Data de Abertura: {licitacao['abertura']}\n\n"
+                    licitacoes_info += f"Valor: {licitacao['valor']}\n\n"
+                    licitacoes_info += f"Objeto: {licitacao['objeto']}\n\n"
+                    licitacoes_info += f"Link: {licitacao['link']}\n\n"
+                    licitacoes_info += "---\n\n"
+            except ValueError as e:
+                st.warning(f"Data de abertura inválida para a licitação com título {licitacao['titulo']}: {licitacao['abertura']}")
+                continue  # Pula para a próxima licitação
         return licitacoes_info
     else:
         st.error(f"Erro na solicitação: {response.status_code}")
         return None
+
     st.markdown("---")
 
 def imprimir_licitacoes(licitacoes_info):
