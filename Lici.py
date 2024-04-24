@@ -98,8 +98,8 @@ def main():
         st.info("Buscando licitações...")
         licitacoes_info = ""
         pagina_atual = 1
-        while len(licitacoes_info.split('\n\n')) < 97 and pagina_atual <= 2:  # Limita a busca às primeiras duas páginas
-            licitacoes_info_pagina = coletar_licitacoes(url_api, palavras_chave, pagina_atual, token, data_maxima)
+        while len(licitacoes_info.split('\n\n')) < 97 and pagina_atual <= 2:
+            licitacoes_info_pagina = coletar_licitacoes(url_api, ["elétrica", "fotovoltaica", "subestação", "corte", "religa", "sigfi", "migdi"], pagina_atual, token, data_maxima)
             if not licitacoes_info_pagina:
                 break
             licitacoes_info += licitacoes_info_pagina
@@ -110,6 +110,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 st.markdown("---")
