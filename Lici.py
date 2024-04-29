@@ -38,17 +38,18 @@ page_bg_img = f"""
 
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
-import datetime
-
-def coletar_licitacoes(url, palavras_chave, pagina, token, data_maxima):
+def coletar_licitacoes(url, palavras_chave, pagina, token, data_maxima, licitacoes_por_pagina=100):
     palavras_chave_str = ",".join(palavras_chave)
     params = {
         'uf': '',
         'palavra_chave': palavras_chave_str,
         'pagina': pagina,
+        'licitacoesPorPagina': licitacoes_por_pagina,
         'token': token
     }
-    response = requests.get(url, params=params)
+    headers = {'Token': token}
+    response = requests.get(url, params=params, headers=headers)
+    
     if response.status_code == 200:
         try:
             data = response.json()
@@ -59,9 +60,7 @@ def coletar_licitacoes(url, palavras_chave, pagina, token, data_maxima):
         licitacoes_info = ""
         for licitacao in data.get('licitacoes', []):
             try:
-                # Corrigindo a interpretação do formato da data
                 data_abertura = datetime.datetime.strptime(licitacao['abertura'], "%d/%m/%Y")
-                # Garantindo que a data de abertura é menor ou igual a data máxima permitida
                 if data_abertura <= data_maxima:
                     licitacoes_info += f"Título: {licitacao['titulo']}\n\n"
                     licitacoes_info += f"Identificador desta licitação: {licitacao['id_licitacao']}\n\n"
@@ -80,19 +79,15 @@ def coletar_licitacoes(url, palavras_chave, pagina, token, data_maxima):
         st.error(f"Erro na solicitação: {response.status_code}")
         return None
 
-    st.markdown("---")
-
 def imprimir_licitacoes(licitacoes_info):
-    st.write("## Resultado da consulta de solicitações")
-    st.text("Bom dia, este é o boletim Ceneged de busca por solicitações.")
-
+    st.write("## Resultado da consulta de licitações")
     if licitacoes_info:
-        licitacoes_split = licitacoes_info.split('\n\n')
+        licitacoes_split = licitacoes_info.split('---\n\n')
         for licitacao in licitacoes_split:
             if licitacao:
                 st.write(licitacao)
     else:
-        st.write("Nenhuma solicitação encontrada.")
+        st.write("Nenhuma licitação encontrada.")
 
 def main():
     st.image("kkk.png", width=270, use_column_width=False)
@@ -104,18 +99,11 @@ def main():
 
     buscar_button = st.button("Buscar Licitações")
     if buscar_button:
-        st.info("Buscando licitações...")
-        licitacoes_info = ""
-        pagina_atual = 1
-        while len(licitacoes_info.split('\n\n')) < 97 and pagina_atual <= 2:
-            licitacoes_info_pagina = coletar_licitacoes(url_api, ["elétrica", "fotovoltaica", "subestação", "corte", "religa", "sigfi", "migdi"], pagina_atual, token, data_maxima)
-            if not licitacoes_info_pagina:
-                break
-            licitacoes_info += licitacoes_info_pagina
-            pagina_atual += 1
+        st.info("Buscando licitações na página 1 com até 100 licitações...")
+        licitacoes_info = coletar_licitacoes(url_api, ["elétrica", "fotovoltaica", "subestação", "corte", "religa", "sigfi", "migdi"], 1, token, data_maxima)
         imprimir_licitacoes(licitacoes_info)
         st.success("Licitações processadas com sucesso!")
-        st.write("Número de licitações coletadas: {}".format(len(licitacoes_info.split('\n\n')) - 1))
+        st.write("Número de licitações coletadas: {}".format(len(licitacoes_info.split('---\n\n')) - 1))
 
 if __name__ == "__main__":
     main()
