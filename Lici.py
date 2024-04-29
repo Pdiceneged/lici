@@ -79,6 +79,8 @@ def coletar_licitacoes(url, palavras_chave, pagina, token, data_maxima, licitaco
         st.error(f"Erro na solicitação: {response.status_code}")
         return None
 
+    st.markdown("---")
+
 def imprimir_licitacoes(licitacoes_info):
     st.write("## Resultado da consulta de licitações")
     if licitacoes_info:
@@ -101,9 +103,10 @@ def main():
     if buscar_button:
         st.info("Buscando licitações na página 1 com até 100 licitações...")
         licitacoes_info = coletar_licitacoes(url_api, ["elétrica", "fotovoltaica", "subestação", "corte", "religa", "sigfi", "migdi"], 1, token, data_maxima)
-        imprimir_licitacoes(licitacoes_info)
         st.success("Licitações processadas com sucesso!")
         st.write("Número de licitações coletadas: {}".format(len(licitacoes_info.split('---\n\n')) - 1))
+        imprimir_licitacoes(licitacoes_info)
+        
 
 if __name__ == "__main__":
     main()
