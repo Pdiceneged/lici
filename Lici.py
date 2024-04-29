@@ -59,7 +59,9 @@ def coletar_licitacoes(url, palavras_chave, pagina, token, data_maxima):
         licitacoes_info = ""
         for licitacao in data.get('licitacoes', []):
             try:
-                data_abertura = datetime.datetime.strptime(licitacao['abertura'], "%Y-%m-%d")
+                # Corrigindo a interpretação do formato da data
+                data_abertura = datetime.datetime.strptime(licitacao['abertura'], "%d/%m/%Y")
+                # Garantindo que a data de abertura é menor ou igual a data máxima permitida
                 if data_abertura <= data_maxima:
                     licitacoes_info += f"Título: {licitacao['titulo']}\n\n"
                     licitacoes_info += f"Identificador desta licitação: {licitacao['id_licitacao']}\n\n"
