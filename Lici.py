@@ -112,6 +112,7 @@ def imprimir_licitacoes(licitacoes_info):
         for licitacao in licitacoes_split:
             if licitacao:
                 st.write(licitacao)
+                st.markdown("---")
     else:
         st.write("Nenhuma licitação encontrada.")
 
@@ -125,7 +126,7 @@ def main():
 
     buscar_button = st.button("Buscar Licitações")
     if buscar_button:
-        st.info("Buscando licitações na página 1 com até 100 licitações...")
+        st.info("Buscando licitações...")
         licitacoes_info = coletar_licitacoes(url_api, ["elétrica", "fotovoltaica", "subestação", "corte", "religa", "sigfi", "migdi"], 1, token, data_maxima)
         st.success("Licitações processadas com sucesso!")
         st.write("Número de licitações coletadas: {}".format(len(licitacoes_info.split('---\n\n')) - 1))
