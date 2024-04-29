@@ -34,13 +34,6 @@ header, footer {{
     background-repeat: no-repeat;
     background-attachment: fixed;
 }}
-[data-testid="stSidebar"] > div:first-child {{
-    background-image: url("data:esgfundo1/png;base64,{img2}");
-    background-position: center; 
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}}
 
 [data-testid="stHeader"] {{
     background: rgba(0,0,0,0);
