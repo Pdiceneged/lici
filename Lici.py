@@ -118,7 +118,7 @@ def imprimir_licitacoes(licitacoes_info):
 
 def main():
     st.image("kkk.png", width=270, use_column_width=False)
-    st.title("+LICITAÇÕES")
+    st.title("+Licitações")
     token = st.text_input("Coloque o Token:", type='password')
     url_api = st.secrets["licitacao"]["url"]
     data_maxima_input = st.date_input("Data máxima para as licitações:", datetime.datetime.today())
